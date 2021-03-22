@@ -1,6 +1,7 @@
 package sd2021.aula2.clients;
 
 import java.io.IOException;
+import java.net.InetAddress;
 
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
@@ -14,22 +15,27 @@ import org.glassfish.jersey.client.ClientConfig;
 
 import sd2021.aula2.api.User;
 import sd2021.aula2.api.service.RestUsers;
+import sd2021.aula2.discovery.Discovery;
+import sd2021.aula2.server.UsersServer;
 
 public class UpdateUserClient {
 
 	public static void main(String[] args) throws IOException {
 		
-		if( args.length != 6) {
-			System.err.println( "Use: java sd2021.aula2.clients.UpdateUserClient url userId oldpwd fullName email password");
+		if( args.length != 5) {
+			System.err.println( "Use: java sd2021.aula2.clients.UpdateUserClient userId oldpwd fullName email password");
 			return;
 		}
-		
-		String serverUrl = args[0];
-		String userId = args[1];
-		String oldpwd = args[2];
-		String fullName = args[3];
-		String email = args[4];
-		String password = args[5];
+
+		Discovery discovery = new Discovery( "UpdateUserClient", "http://" + InetAddress.getLocalHost().getHostAddress());
+		discovery.startCollectingAnnouncements();
+
+		String serverUrl = discovery.knownUrisOf(UsersServer.SERVICE).iterator().next().toString();
+		String userId = args[0];
+		String oldpwd = args[1];
+		String fullName = args[2];
+		String email = args[3];
+		String password = args[4];
 		
 		User u = new User( userId, fullName, email, password);
 		

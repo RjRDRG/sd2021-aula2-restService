@@ -1,6 +1,8 @@
 package sd2021.aula2.clients;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.URI;
 
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
@@ -14,31 +16,37 @@ import org.glassfish.jersey.client.ClientConfig;
 
 import sd2021.aula2.api.User;
 import sd2021.aula2.api.service.RestUsers;
+import sd2021.aula2.discovery.Discovery;
+import sd2021.aula2.server.UsersServer;
 
 public class CreateUserClient {
 
 	public static void main(String[] args) throws IOException {
 		
-		if( args.length != 5) {
-			System.err.println( "Use: java sd2021.aula2.clients.CreateUserClient url userId fullName email password");
+		if( args.length != 4) {
+			System.err.println( "Use: java sd2021.aula2.clients.CreateUserClient userId fullName email password");
 			return;
 		}
-		
-		String serverUrl = args[0];
-		String userId = args[1];
-		String fullName = args[2];
-		String email = args[3];
-		String password = args[4];
-		
+
+		Discovery discovery = new Discovery( "CreateUsersClient", "http://" + InetAddress.getLocalHost().getHostAddress());
+		discovery.startCollectingAnnouncements();
+
+		String serverUrl = discovery.knownUrisOf(UsersServer.SERVICE).iterator().next().toString();
+		System.out.println(serverUrl);
+		String userId = args[0];
+		String fullName = args[1];
+		String email = args[2];
+		String password = args[3];
+
 		User u = new User( userId, fullName, email, password);
-		
+
 		System.out.println("Sending request to server.");
-		
+
 		ClientConfig config = new ClientConfig();
 		Client client = ClientBuilder.newClient(config);
-		
+
 		WebTarget target = client.target( serverUrl ).path( RestUsers.PATH );
-		
+
 		Response r = target.request()
 				.accept(MediaType.APPLICATION_JSON)
 				.post(Entity.entity(u, MediaType.APPLICATION_JSON));

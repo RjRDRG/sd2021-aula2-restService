@@ -1,6 +1,7 @@
 package sd2021.aula2.clients;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.List;
 
 import jakarta.ws.rs.client.Client;
@@ -15,18 +16,23 @@ import org.glassfish.jersey.client.ClientConfig;
 
 import sd2021.aula2.api.User;
 import sd2021.aula2.api.service.RestUsers;
+import sd2021.aula2.discovery.Discovery;
+import sd2021.aula2.server.UsersServer;
 
 public class SearchUserClient {
 
 	public static void main(String[] args) throws IOException {
 		
-		if( args.length != 2) {
-			System.err.println( "Use: java sd2021.aula2.clients.SearchUserClient url query");
+		if( args.length != 1) {
+			System.err.println( "Use: java sd2021.aula2.clients.SearchUserClient query");
 			return;
 		}
-		
-		String serverUrl = args[0];
-		String query = args[1];
+
+		Discovery discovery = new Discovery( "SearchUserClient", "http://" + InetAddress.getLocalHost().getHostAddress());
+		discovery.startCollectingAnnouncements();
+
+		String serverUrl = discovery.knownUrisOf(UsersServer.SERVICE).iterator().next().toString();
+		String query = args[0];
 		
 		System.out.println("Sending request to server.");
 		
